@@ -1,0 +1,3 @@
+C:\Users\Wills\source\repos\Desktop_emulation\Desktop_emulation\obj\Debug\Desktop_emulation.njsproj.AssemblyReference.cache
+C:\Users\Wills\source\repos\Desktop_emulation\Desktop_emulation\obj\Debug\Desktop_emulation.njsproj.CoreCompileInputs.cache
+C:\Users\Wills\source\repos\Desktop_emulation\Desktop_emulation\bin\Microsoft.NodejsTools.WebRole.dll
