@@ -238,7 +238,7 @@
             min-width: 90px;
         }
 
-        /* === WINDOWS === */
+        /* windows */
         .window {
             position: fixed;
             min-width: 340px;
@@ -338,7 +338,7 @@
             padding: 0;
         }
 
-        /* === FILE BROWSER === */
+        /* File browser */
         .file-browser {
             display: flex;
             flex-direction: column;
@@ -423,7 +423,7 @@
                 word-break: break-word;
             }
 
-        /* === TEXT VIEWER === */
+        /* text viewer */
         .text-viewer {
             padding: 20px;
             font-family: 'IBM Plex Mono', monospace;
@@ -435,7 +435,7 @@
             white-space: pre-wrap;
         }
 
-        /* === IMAGE VIEWER === */
+        /* image viewer */
         .img-viewer {
             display: flex;
             align-items: center;
@@ -445,7 +445,7 @@
             background: #0a0e14;
         }
 
-        /* === ABOUT / WELCOME === */
+        /* about / welcome */
         .about-page {
             padding: 30px;
             height: 100%;
@@ -505,7 +505,7 @@
                 color: var(--accent);
             }
 
-        /* === TERMINAL === */
+        /*  terminal */
         .terminal-body {
             background: #090d12;
             padding: 16px;
@@ -559,7 +559,7 @@
                 caret-color: var(--accent2);
             }
 
-        /* === SCROLLBARS === */
+        /*  scrollbars  */
         ::-webkit-scrollbar {
             width: 6px;
         }
@@ -577,7 +577,7 @@
                 background: rgba(255,255,255,0.2);
             }
 
-        /* === CONTEXT MENU === */
+        /*  context menu */
         #context-menu {
             position: fixed;
             background: rgba(22,27,34,0.98);
@@ -643,9 +643,8 @@
     <div id="context-menu"></div>
 
     <script>
-        // =====================================================
+
         // DATA LAYER — filesystem simulation
-        // =====================================================
         const FS = {
             'Desktop': {
                 type: 'folder', color: '#58a6ff',
@@ -788,9 +787,7 @@ No longer needed.` },
             }
         };
 
-        // =====================================================
-        // WINDOW MANAGER
-        // =====================================================
+        // Window manager
         let windowCount = 0;
         let highestZ = 200;
         const openWindows = {};
@@ -938,9 +935,7 @@ No longer needed.` },
             bar.appendChild(item);
         }
 
-        // =====================================================
-        // DRAG & RESIZE
-        // =====================================================
+        // Drage and resize
         function makeDraggable(win, handle) {
             let isDragging = false, startX, startY, startL, startT;
             handle.addEventListener('mousedown', e => {
@@ -988,9 +983,7 @@ No longer needed.` },
             document.addEventListener('mouseup', () => { isResizing = false; });
         }
 
-        // =====================================================
-        // WINDOW CONTENT — File Browser
-        // =====================================================
+        // File Browser
         function openFolder(pathArr) {
             const name = pathArr[pathArr.length - 1] || 'Desktop';
             const node = getNodeAtPath(pathArr);
@@ -1069,9 +1062,7 @@ No longer needed.` },
             body.appendChild(fb);
         }
 
-        // =====================================================
-        // WINDOW CONTENT — Text Viewer
-        // =====================================================
+        // Text Viewer
         function openTextFile(name, text) {
             createWindow({
                 title: `📄 ${name}`,
@@ -1086,9 +1077,7 @@ No longer needed.` },
             });
         }
 
-        // =====================================================
-        // WINDOW CONTENT — About
-        // =====================================================
+        // About
         function openAbout() {
             createWindow({
                 title: '⬡ About CloudOS',
@@ -1134,9 +1123,7 @@ No longer needed.` },
             });
         }
 
-        // =====================================================
         // WINDOW CONTENT — Terminal
-        // =====================================================
         function openTerminal() {
             createWindow({
                 title: '$ Terminal',
@@ -1251,9 +1238,7 @@ No longer needed.` },
             });
         }
 
-        // =====================================================
         // SVG ICONS
-        // =====================================================
         function folderSVG(color = '#e3b341') {
             return `<svg viewBox="0 0 52 44" xmlns="http://www.w3.org/2000/svg">
         <rect x="1" y="10" width="50" height="33" rx="4" fill="${color}" opacity="0.9"/>
@@ -1295,9 +1280,8 @@ No longer needed.` },
       </svg>`;
         }
 
-        // =====================================================
+
         // DESKTOP ICONS
-        // =====================================================
         const desktopItems = [
             { name: 'Documents', icon: folderSVG('#e3b341'), path: ['Documents'], type: 'folder' },
             { name: 'Projects', icon: folderSVG('#3fb950'), path: ['Projects'], type: 'folder' },
@@ -1335,9 +1319,7 @@ No longer needed.` },
             document.getElementById('clock').innerHTML = `${time}<br><span style="font-size:10px">${date}</span>`;
         }
 
-        // =====================================================
         // CONTEXT MENU
-        // =====================================================
         const ctxMenu = document.getElementById('context-menu');
 
         document.getElementById('desktop').addEventListener('contextmenu', e => {
@@ -1359,9 +1341,7 @@ No longer needed.` },
             if (!e.target.closest('#desktop')) ctxMenu.style.display = 'none';
         });
 
-        // =====================================================
         // INIT
-        // =====================================================
         buildDesktop();
         updateClock();
         setInterval(updateClock, 1000);
