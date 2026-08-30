@@ -42,7 +42,7 @@
             color: var(--text);
         }
 
-        /* WALLPAPER */
+        /* wallpaper */
         #wallpaper {
             position: fixed;
             inset: 0;
@@ -1123,7 +1123,7 @@ No longer needed.` },
             });
         }
 
-        // WINDOW CONTENT — Terminal
+        // Terminal
         function openTerminal() {
             createWindow({
                 title: '$ Terminal',
@@ -1281,15 +1281,36 @@ No longer needed.` },
         }
 
 
-        // DESKTOP ICONS
+        // icons
         const desktopItems = [
             { name: 'Documents', icon: folderSVG('#e3b341'), path: ['Documents'], type: 'folder' },
             { name: 'Projects', icon: folderSVG('#3fb950'), path: ['Projects'], type: 'folder' },
             { name: 'System', icon: folderSVG('#d2a8ff'), path: ['System'], type: 'folder' },
             { name: 'Trash', icon: folderSVG('#f78166'), path: ['Trash'], type: 'folder' },
             { name: 'Terminal', icon: termSVG('#3fb950'), path: null, type: 'terminal' },
+            //{ name: 'photo.png', img: 'icon.png', path: null, type: 'image' },
+            { name: 'photo.png', img: 'icon.png', src: 'photo.png', path: null, type: 'image' },
             { name: 'About', icon: appSVG('#d2a8ff'), path: null, type: 'about' },
         ];
+
+        function openImageFile(src, name) {
+            createWindow({
+                title: `🖼 ${name}`,
+                width: 600, height: 480,
+                iconColor: 'var(--accent4)',
+                content(body) {
+                    body.style.padding = '0';
+                    body.style.background = '#0a0e14';
+                    body.style.display = 'flex';
+                    body.style.alignItems = 'center';
+                    body.style.justifyContent = 'center';
+                    const img = document.createElement('img');
+                    img.src = src;
+                    img.style.cssText = 'max-width:100%;max-height:100%;object-fit:contain;';
+                    body.appendChild(img);
+                }
+            });
+        }
 
         function buildDesktop() {
             const desktop = document.getElementById('desktop');
@@ -1304,14 +1325,15 @@ No longer needed.` },
                 el.innerHTML = `${iconHTML}<div class="icon-label">${item.name}</div>`;
                 el.ondblclick = () => {
                     if (item.type === 'folder') openFolder(item.path);
-                    else if (item.type === 'terminal') openTerminal();
+                    else if (item.type === 'terminal') openTerminal(); //add to here
                     else if (item.type === 'about') openAbout();
+                    else if (item.type === 'image') openImageFile(item.src, item.name);
                 };
                 desktop.appendChild(el);
             });
         }
 
-        // CLOCK
+        // clock
         function updateClock() {
             const now = new Date();
             const time = now.toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit' });
