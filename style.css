@@ -59,7 +59,7 @@ body {
         opacity: 0.8;
     }
 
-/* DESKTOP */
+/* desktop */
 #desktop {
     position: fixed;
     inset: 0;
@@ -73,7 +73,7 @@ body {
     gap: 10px;
 }
 
-/* DESKTOP ICONS */
+/* icons */
 .desktop-icon {
     display: flex;
     flex-direction: column;
