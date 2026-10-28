@@ -7,7 +7,7 @@ const FS = {
                 type: 'folder', color: '#e3b341',
                 children: {
                     'readme.txt': {
-                        type: 'text', content: `CloudOS — Desktop Environment v1.0
+                        type: 'text', content: `CloudOS - Desktop Environment v1.0
 ==================================
 
 Welcome to CloudOS, a browser-based desktop simulation.
@@ -29,7 +29,7 @@ No frameworks. No dependencies.` },
 --------------
 
 - Buy groceries
-- Finish the CloudOS project ?
+- Finish the CloudOS project 
 - Read that article about WebAssembly
 - Call dentist on Friday
 - Review pull request #42
@@ -113,8 +113,8 @@ h1 {
                 children: {
                     'about.app': { type: 'about' },
                     'terminal.app': { type: 'terminal' },
-                    'syslog.txt': {
-                        type: 'text', content: `[2026-04-25 08:00:01] BOOT: CloudOS kernel initializing...
+                    'syslog.txt': { //change here
+                        type: 'text', content: `[2026-04-25 08:00:01] BOOT: CloudOS kernel initializing... 
 [2026-04-25 08:00:02] BOOT: Loading modules... OK
 [2026-04-25 08:00:03] BOOT: Mounting filesystem... OK
 [2026-04-25 08:00:04] BOOT: Starting window manager... OK
@@ -344,7 +344,7 @@ function openFolder(pathArr) {
     if (!node || !node.children) return;
 
     const wid = createWindow({
-        title: `?? ${name}`,
+        title: ` ${name}`,
         width: 580, height: 400,
         iconColor: node.color || 'var(--folder-yellow)',
         content(body) {
@@ -366,7 +366,7 @@ function renderFileBrowser(body, pathArr) {
     const toolbar = document.createElement('div');
     toolbar.className = 'browser-toolbar';
     const backBtn = document.createElement('button');
-    backBtn.textContent = '? Back';
+    backBtn.textContent = ' Back';
     const pathEl = document.createElement('div');
     pathEl.className = 'browser-path';
     pathEl.textContent = pathStr;
@@ -419,7 +419,7 @@ function renderFileBrowser(body, pathArr) {
 // Text Viewer
 function openTextFile(name, text) {
     createWindow({
-        title: `?? ${name}`,
+        title: ` ${name}`,
         width: 520, height: 380,
         iconColor: 'var(--accent)',
         content(body) {
@@ -434,24 +434,24 @@ function openTextFile(name, text) {
 // About
 function openAbout() {
     createWindow({
-        title: '? About CloudOS',
+        title: ' About CloudOS',
         width: 420, height: 380,
         iconColor: 'var(--accent4)',
         content(body) {
             body.innerHTML = `
             <div class="about-page">
               <h1>CloudOS</h1>
-              <div class="version">v1.0.0 — Browser Desktop Environment</div>
-              <p>A fully simulated desktop operating system running in your web browser. Built with vanilla HTML, CSS, and JavaScript — no frameworks.</p>
+              <div class="version">v1.0.0 - Browser Desktop Environment</div>
+              <p>A fully simulated desktop operating system running in your web browser. Built with vanilla HTML, CSS, and JavaScript - no frameworks.</p>
               <p>Open folders, read files, run commands in the terminal, and manage multiple windows just like a real OS.</p>
               <div class="stat-grid">
                 <div class="stat-card">
                   <div class="stat-label">Windows Open</div>
-                  <div class="stat-value" id="stat-wins">—</div>
+                  <div class="stat-value" id="stat-wins">-</div>
                 </div>
                 <div class="stat-card">
                   <div class="stat-label">Uptime</div>
-                  <div class="stat-value" id="stat-uptime">—</div>
+                  <div class="stat-value" id="stat-uptime">-</div>
                 </div>
                 <div class="stat-card">
                   <div class="stat-label">Platform</div>
@@ -524,7 +524,7 @@ function openTerminal() {
 
             // Initial
             const welcome = document.createElement('div');
-            welcome.innerHTML = `<span class="output" style="color:var(--accent2)">CloudOS Terminal — type 'help' for commands</span>`;
+            welcome.innerHTML = `<span class="output" style="color:var(--accent2)">CloudOS Terminal - type 'help' for commands</span>`;
             welcome.className = 'terminal-line';
             term.appendChild(welcome);
 
@@ -649,7 +649,7 @@ const desktopItems = [
 
 function openImageFile(src, name) {
     createWindow({
-        title: `?? ${name}`,
+        title: ` ${name}`,
         width: 600, height: 480,
         iconColor: 'var(--accent4)',
         content(body) {
@@ -704,11 +704,11 @@ document.getElementById('desktop').addEventListener('contextmenu', e => {
     ctxMenu.style.left = Math.min(e.clientX, window.innerWidth - 200) + 'px';
     ctxMenu.style.top = Math.min(e.clientY, window.innerHeight - 200) + 'px';
     ctxMenu.innerHTML = `
-        <div class="ctx-item" onclick="openFolder(['Documents'])">?? Open Documents</div>
-        <div class="ctx-item" onclick="openFolder(['Projects'])">?? Open Projects</div>
+        <div class="ctx-item" onclick="openFolder(['Documents'])"> Open Documents</div>
+        <div class="ctx-item" onclick="openFolder(['Projects'])"> Open Projects</div>
         <div class="ctx-item" onclick="openTerminal()">$ Open Terminal</div>
         <div class="ctx-divider"></div>
-        <div class="ctx-item" onclick="openAbout()">? About CloudOS</div>
+        <div class="ctx-item" onclick="openAbout()"> About CloudOS</div>
       `;
 });
 
