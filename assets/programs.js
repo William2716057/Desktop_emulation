@@ -137,3 +137,118 @@ No longer needed.` },
         }
     }
 };
+
+// Terminal
+function openTerminal() {
+    createWindow({
+        title: '$ Terminal',
+        width: 560, height: 360,
+        iconColor: 'var(--accent2)',
+        content(body) {
+            body.style.padding = '0';
+            const term = document.createElement('div');
+            term.className = 'terminal-body';
+
+            const history = [];
+            let histIdx = -1;
+
+            const commands = {
+                help: () => `Available commands:\n  help       Show this help\n  ls         List files\n  pwd        Print working directory\n  echo [msg] Print message\n  date       Show current date\n  clear      Clear terminal\n  whoami     Show current user\n  uname      System info\n  uptime     System uptime`,
+                ls: () => `Documents/\nProjects/\nSystem/\nTrash/`,
+                pwd: () => `/home/guest/Desktop`,
+                whoami: () => `guest`,
+                date: () => new Date().toString(),
+                uname: () => `CloudOS 1.0.0 Browser x86_64`,
+                uptime: () => `up just now, 1 user, load average: 0.00, 0.00, 0.00`,
+                clear: () => '__clear__',
+                echo: (args) => args.join(' '),
+            };
+
+            function printLine(prompt, cmd, output, isError = false) {
+                const line = document.createElement('div');
+                line.className = 'terminal-line' + (isError ? ' error' : '');
+                if (prompt) {
+                    line.innerHTML = `<span class="prompt">guest@cloudos:~$ </span><span class="cmd">${cmd}</span>`;
+                }
+                if (output) {
+                    output.split('\n').forEach(l => {
+                        const o = document.createElement('div');
+                        o.className = 'terminal-line' + (isError ? ' error' : '');
+                        o.innerHTML = `<span class="output">${l}</span>`;
+                        term.insertBefore(o, inputLine);
+                    });
+                } else if (prompt) {
+                    term.insertBefore(line, inputLine);
+                }
+                term.scrollTop = term.scrollHeight;
+            }
+
+            // Initial
+            const welcome = document.createElement('div');
+            welcome.innerHTML = `<span class="output" style="color:var(--accent2)">CloudOS Terminal - type 'help' for commands</span>`;
+            welcome.className = 'terminal-line';
+            term.appendChild(welcome);
+
+            // Input line
+            const inputLine = document.createElement('div');
+            inputLine.className = 'terminal-input-line';
+            inputLine.innerHTML = `<span class="prompt">guest@cloudos:~$ </span>`;
+            const input = document.createElement('input');
+            input.setAttribute('type', 'text');
+            input.setAttribute('autocomplete', 'off');
+            input.setAttribute('spellcheck', 'false');
+            inputLine.appendChild(input);
+            term.appendChild(inputLine);
+
+            term.onclick = () => input.focus();
+
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    const raw = input.value.trim();
+                    const [cmd, ...args] = raw.split(' ');
+                    input.value = '';
+
+                    if (raw) history.unshift(raw);
+                    histIdx = -1;
+
+                    // Echo the typed line
+                    const echoLine = document.createElement('div');
+                    echoLine.className = 'terminal-line';
+                    echoLine.innerHTML = `<span class="prompt">guest@cloudos:~$ </span><span class="cmd">${raw}</span>`;
+                    term.insertBefore(echoLine, inputLine);
+
+                    if (!raw) { term.scrollTop = term.scrollHeight; return; }
+
+                    if (commands[cmd]) {
+                        const result = commands[cmd](args);
+                        if (result === '__clear__') {
+                            while (term.firstChild !== inputLine) term.removeChild(term.firstChild);
+                        } else {
+                            result.split('\n').forEach(l => {
+                                const o = document.createElement('div');
+                                o.className = 'terminal-line';
+                                o.innerHTML = `<span class="output">${l}</span>`;
+                                term.insertBefore(o, inputLine);
+                            });
+                        }
+                    } else if (raw) {
+                        const o = document.createElement('div');
+                        o.className = 'terminal-line error';
+                        o.innerHTML = `<span class="output">bash: ${cmd}: command not found</span>`;
+                        term.insertBefore(o, inputLine);
+                    }
+                    term.scrollTop = term.scrollHeight;
+                } else if (e.key === 'ArrowUp') {
+                    if (histIdx < history.length - 1) histIdx++;
+                    input.value = history[histIdx] || '';
+                } else if (e.key === 'ArrowDown') {
+                    if (histIdx > 0) histIdx--;
+                    input.value = histIdx >= 0 ? history[histIdx] : '';
+                }
+            });
+
+            body.appendChild(term);
+            setTimeout(() => input.focus(), 100);
+        }
+    });
+}
