@@ -1,3 +1,5 @@
+
+
 // DATA LAYER — filesystem simulation
 const FS = {
     'Desktop': {
@@ -646,6 +648,8 @@ const desktopItems = [
     { name: 'photo.png', img: 'icon.png', src: 'photo.png', path: null, type: 'image' },
     { name: 'About', icon: appSVG('#d2a8ff'), path: null, type: 'about' },
 ];
+
+
 
 function openImageFile(src, name) {
     createWindow({
