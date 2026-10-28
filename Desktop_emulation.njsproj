@@ -28,6 +28,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="assets\programs.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="index.html">
       <SubType>Code</SubType>
     </Content>
@@ -40,6 +43,9 @@
     <Content Include="style.css">
       <SubType>Code</SubType>
     </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="assets\" />
   </ItemGroup>
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
   <ProjectExtensions>
