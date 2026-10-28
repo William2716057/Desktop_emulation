@@ -1,4 +1,6 @@
 // DATA LAYER - filesystem simulation
+
+
 const FS = {
     'Desktop': {
         type: 'folder', color: '#58a6ff',
@@ -18,9 +20,6 @@ FEATURES:
       - Terminal emulator
       - Multi-window management
       - Taskbar with clock
-
-KEYBOARD SHORTCUTS:
-      (none yet - coming soon)
 
 Created with HTML, CSS, and JavaScript.
 No frameworks. No dependencies.` },
@@ -102,12 +101,14 @@ h1 {
 [ ] Picture with steganography elements
 [ ] Flappy Bird
 [ ] Doom
+[ ] C executable
 [ ] Minesweeper` },
                 }
             },
             'System': {
                 type: 'folder', color: '#d2a8ff',
                 children: {
+                    'flappy.app': { type: 'flappy' }, //move to game folder 
                     'about.app': { type: 'about' },
                     'terminal.app': { type: 'terminal' },
                     'syslog.txt': {

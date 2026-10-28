@@ -28,6 +28,9 @@
     <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="assets\flappy.js">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="assets\programs.js">
       <SubType>Code</SubType>
     </Content>

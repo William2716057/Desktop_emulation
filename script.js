@@ -3,6 +3,7 @@ let windowCount = 0;
 let highestZ = 200;
 const openWindows = {};
 
+
 function getNodeAtPath(pathArr) {
     let node = FS['Desktop'];
     for (const part of pathArr) {
@@ -12,9 +13,11 @@ function getNodeAtPath(pathArr) {
     return node;
 }
 
-function createWindow({ title, width = 600, height = 420, content, id, iconColor }) {
+function createWindow({ title, width = 600, height = 420, content, id, iconColor, onClose }) {
     windowCount++;
     const wid = id || `win-${windowCount}`;
+
+    openWindows[wid] = { title, minimized: false, maximized: false, prevState: null, onClose };
 
     // Center with slight offset
     const left = Math.max(40, Math.min(window.innerWidth - width - 40, 100 + (windowCount % 6) * 28));
@@ -62,7 +65,7 @@ function createWindow({ title, width = 600, height = 420, content, id, iconColor
     // Taskbar
     addToTaskbar(wid, title, iconColor);
 
-    openWindows[wid] = { title, minimized: false, maximized: false, prevState: null };
+    //openWindows[wid] = { title, minimized: false, maximized: false, prevState: null };
     focusWindow(wid);
     return wid;
 }
@@ -82,6 +85,7 @@ function focusWindow(wid) {
 
 function closeWindow(wid) {
     const win = document.getElementById(wid);
+    openWindows[wid]?.onClose?.();
     if (win) {
         win.style.animation = 'winOpen 0.15s cubic-bezier(0.34,1.56,0.64,1) reverse both';
         setTimeout(() => win.remove(), 150);
@@ -263,7 +267,10 @@ function renderFileBrowser(body, pathArr) {
             } else if (child.type === 'terminal') {
                 icon.innerHTML = `${termSVG('#3fb950')}<span>${name}</span>`;
                 icon.ondblclick = () => openTerminal();
-            }
+            } else if (child.type === 'flappy') {
+                icon.innerHTML = `${appSVG('#e3b341')}<span>${name}</span>`;
+                icon.ondblclick = () => openFlappyBird();
+        }
 
             content.appendChild(icon);
         });
@@ -389,6 +396,7 @@ const desktopItems = [
     //{ name: 'photo.png', img: 'icon.png', path: null, type: 'image' },
     { name: 'photo.png', img: 'icon.png', src: 'photo.png', path: null, type: 'image' },
     { name: 'About', icon: appSVG('#d2a8ff'), path: null, type: 'about' },
+    { name: 'Flappy Bird', icon: appSVG('#e3b341'), path: null, type: 'flappy' },
 ];
 
 
@@ -428,6 +436,7 @@ function buildDesktop() {
             else if (item.type === 'terminal') openTerminal(); //add to here
             else if (item.type === 'about') openAbout();
             else if (item.type === 'image') openImageFile(item.src, item.name);
+            else if (item.type === 'flappy') openFlappyBird();
         };
         desktop.appendChild(el);
     });
