@@ -26,7 +26,7 @@ function openFlappyBird() {
             body.appendChild(canvas);
             const ctx = canvas.getContext('2d');
 
-            // Scale the canvas to fit the window, keeping the aspect ratio
+            // Scale canvas to fit  window
             const fit = () => {
                 const s = Math.min(body.clientWidth / W, body.clientHeight / H);
                 canvas.style.width = W * s + 'px';
@@ -35,8 +35,8 @@ function openFlappyBird() {
             new ResizeObserver(fit).observe(body);
             fit();
 
-            // Game state
-            let state = 'start';            // 'start' | 'play' | 'over'
+            // Game states
+            let state = 'start'; 
             let bird, pipes, score, best = 0, t0 = 0;
 
             function reset() {
@@ -63,7 +63,7 @@ function openFlappyBird() {
                 bird.vy += GRAVITY * dt;
                 bird.y += bird.vy * dt;
 
-                // Spawn pipes
+                //Pipes
                 const last = pipes[pipes.length - 1];
                 if (!last || last.x < W - PIPE_SPACING) {
                     const top = 50 + Math.random() * (H - GROUND - GAP - 100);
@@ -73,7 +73,7 @@ function openFlappyBird() {
                 for (const p of pipes) {
                     p.x -= SPEED * dt;
 
-                    // Collision (bird as a box)
+                    // Collision
                     const bx = bird.x - bird.r, by = bird.y - bird.r, bs = bird.r * 2;
                     const hitX = bx + bs > p.x && bx < p.x + PIPE_W;
                     if (hitX && (by < p.top || by + bs > p.top + GAP)) gameOver();
@@ -95,7 +95,7 @@ function openFlappyBird() {
             }
 
             function draw(now) {
-                // Sky
+                // background
                 ctx.fillStyle = '#70c5ce';
                 ctx.fillRect(0, 0, W, H);
 
@@ -110,7 +110,7 @@ function openFlappyBird() {
                 ctx.fillStyle = '#c9a227';
                 ctx.fillRect(0, H - GROUND, W, GROUND);
 
-                // Bird (bobs gently on the start screen)
+                // Bird 
                 const by = state === 'start' ? bird.y + Math.sin(now / 200) * 6 : bird.y;
                 ctx.fillStyle = '#ffd33d';
                 ctx.beginPath(); ctx.arc(bird.x, by, bird.r, 0, Math.PI * 2); ctx.fill();
@@ -133,7 +133,7 @@ function openFlappyBird() {
                 }
             }
 
-            // Main loop (delta-time so speed is the same on any refresh rate)
+            // Main loop 
             const win = body.closest('.window');
             function loop(now) {
                 const dt = Math.min(2, (now - t0) / 16.667 || 1);
@@ -146,7 +146,7 @@ function openFlappyBird() {
             }
             rafId = requestAnimationFrame(loop);
 
-            // Input: keys only count while THIS window is focused
+            // Input
             keyHandler = e => {
                 if (!win.classList.contains('focused') || win.classList.contains('minimized')) return;
                 if (e.code === 'Space' || e.key === 'Enter' || e.key === 'ArrowUp') {
