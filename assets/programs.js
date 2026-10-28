@@ -111,6 +111,7 @@ h1 {
                     'flappy.app': { type: 'flappy' }, //move to game folder 
                     'about.app': { type: 'about' },
                     'terminal.app': { type: 'terminal' },
+                    'hello.exe': { type: 'native', src: 'assets/bin/hello.js', factory: 'createHello' },
                     'syslog.txt': {
                         type: 'text', content: `[2026-04-25 08:00:01] BOOT: CloudOS kernel initializing... 
 [2026-04-25 08:00:02] BOOT: Loading modules... OK
@@ -153,44 +154,7 @@ function openTerminal() {
             const history = [];
             let histIdx = -1;
 
-            const commands = {
-                help: () => `Available commands:\n  help       Show this help\n  ls         List files\n  pwd        Print working directory\n  echo [msg] Print message\n  date       Show current date\n  clear      Clear terminal\n  whoami     Show current user\n  uname      System info\n  uptime     System uptime`,
-                ls: () => `Documents/\nProjects/\nSystem/\nTrash/`,
-                pwd: () => `/home/guest/Desktop`,
-                whoami: () => `guest`,
-                date: () => new Date().toString(),
-                uname: () => `CloudOS 1.0.0 Browser x86_64`,
-                uptime: () => `up just now, 1 user, load average: 0.00, 0.00, 0.00`,
-                clear: () => '__clear__',
-                echo: (args) => args.join(' '),
-            };
-
-            function printLine(prompt, cmd, output, isError = false) {
-                const line = document.createElement('div');
-                line.className = 'terminal-line' + (isError ? ' error' : '');
-                if (prompt) {
-                    line.innerHTML = `<span class="prompt">guest@cloudos:~$ </span><span class="cmd">${cmd}</span>`;
-                }
-                if (output) {
-                    output.split('\n').forEach(l => {
-                        const o = document.createElement('div');
-                        o.className = 'terminal-line' + (isError ? ' error' : '');
-                        o.innerHTML = `<span class="output">${l}</span>`;
-                        term.insertBefore(o, inputLine);
-                    });
-                } else if (prompt) {
-                    term.insertBefore(line, inputLine);
-                }
-                term.scrollTop = term.scrollHeight;
-            }
-
-            // Initial
-            const welcome = document.createElement('div');
-            welcome.innerHTML = `<span class="output" style="color:var(--accent2)">CloudOS Terminal - type 'help' for commands</span>`;
-            welcome.className = 'terminal-line';
-            term.appendChild(welcome);
-
-            // Input line
+            // Input line (created first so write() can use it)
             const inputLine = document.createElement('div');
             inputLine.className = 'terminal-input-line';
             inputLine.innerHTML = `<span class="prompt">guest@cloudos:~$ </span>`;
@@ -199,11 +163,47 @@ function openTerminal() {
             input.setAttribute('autocomplete', 'off');
             input.setAttribute('spellcheck', 'false');
             inputLine.appendChild(input);
+
+            // Output helper (also used by C programs)
+            const write = (text, err = false) => {
+                text.split('\n').forEach(l => {
+                    const o = document.createElement('div');
+                    o.className = 'terminal-line' + (err ? ' error' : '');
+                    o.innerHTML = '<span class="output"></span>';
+                    o.firstChild.textContent = l;
+                    term.insertBefore(o, inputLine);
+                });
+                term.scrollTop = term.scrollHeight;
+            };
+
+            const commands = {
+                help: () => `Available commands:\n  help          Show this help\n  ls            List files\n  pwd           Print working directory\n  echo [msg]    Print message\n  date          Show current date\n  clear         Clear terminal\n  whoami        Show current user\n  uname         System info\n  uptime        System uptime\n  run [prog]    Run a program (e.g. run hello)`,
+                ls: () => `Documents/\nProjects/\nSystem/\nTrash/`,
+                pwd: () => `/home/guest/Desktop`,
+                whoami: () => `guest`,
+                date: () => new Date().toString(),
+                uname: () => `CloudOS 1.0.0 Browser x86_64`,
+                uptime: () => `up just now, 1 user, load average: 0.00, 0.00, 0.00`,
+                clear: () => '__clear__',
+                echo: (args) => args.join(' '),
+                run: async (args) => {
+                    const prog = findFile(args[0] || '');
+                    if (!prog || prog.type !== 'native') return `run: ${args[0] || ''}: no such program`;
+                    await runNative(prog, write, args.slice(1));
+                    return '';
+                },
+            };
+
+            // Initial
+            const welcome = document.createElement('div');
+            welcome.innerHTML = `<span class="output" style="color:var(--accent2)">CloudOS Terminal - type 'help' for commands</span>`;
+            welcome.className = 'terminal-line';
+            term.appendChild(welcome);
             term.appendChild(inputLine);
 
             term.onclick = () => input.focus();
 
-            input.addEventListener('keydown', e => {
+            input.addEventListener('keydown', async e => {
                 if (e.key === 'Enter') {
                     const raw = input.value.trim();
                     const [cmd, ...args] = raw.split(' ');
@@ -215,28 +215,21 @@ function openTerminal() {
                     // Echo the typed line
                     const echoLine = document.createElement('div');
                     echoLine.className = 'terminal-line';
-                    echoLine.innerHTML = `<span class="prompt">guest@cloudos:~$ </span><span class="cmd">${raw}</span>`;
+                    echoLine.innerHTML = `<span class="prompt">guest@cloudos:~$ </span><span class="cmd"></span>`;
+                    echoLine.querySelector('.cmd').textContent = raw;
                     term.insertBefore(echoLine, inputLine);
 
                     if (!raw) { term.scrollTop = term.scrollHeight; return; }
 
                     if (commands[cmd]) {
-                        const result = commands[cmd](args);
+                        const result = await commands[cmd](args);
                         if (result === '__clear__') {
                             while (term.firstChild !== inputLine) term.removeChild(term.firstChild);
-                        } else {
-                            result.split('\n').forEach(l => {
-                                const o = document.createElement('div');
-                                o.className = 'terminal-line';
-                                o.innerHTML = `<span class="output">${l}</span>`;
-                                term.insertBefore(o, inputLine);
-                            });
+                        } else if (result) {
+                            write(result);
                         }
-                    } else if (raw) {
-                        const o = document.createElement('div');
-                        o.className = 'terminal-line error';
-                        o.innerHTML = `<span class="output">bash: ${cmd}: command not found</span>`;
-                        term.insertBefore(o, inputLine);
+                    } else {
+                        write(`bash: ${cmd}: command not found`, true);
                     }
                     term.scrollTop = term.scrollHeight;
                 } else if (e.key === 'ArrowUp') {

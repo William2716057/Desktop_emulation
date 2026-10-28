@@ -255,6 +255,7 @@ function renderFileBrowser(body, pathArr) {
             const icon = document.createElement('div');
             icon.className = 'browser-icon';
 
+            //here
             if (child.type === 'folder') {
                 icon.innerHTML = `${folderSVG(child.color || '#e3b341')}<span>${name}</span>`;
                 icon.ondblclick = () => renderFileBrowser(body, [...pathArr, name]);
@@ -270,7 +271,11 @@ function renderFileBrowser(body, pathArr) {
             } else if (child.type === 'flappy') {
                 icon.innerHTML = `${appSVG('#e3b341')}<span>${name}</span>`;
                 icon.ondblclick = () => openFlappyBird();
-        }
+            } else if (child.type === 'native') { //c exec
+                icon.innerHTML = `${termSVG('#3fb950')}<span>${name}</span>`;
+                icon.ondblclick = () => openNative(name, child);
+            }
+        
 
             content.appendChild(icon);
         });
@@ -448,6 +453,55 @@ function updateClock() {
     const time = now.toLocaleTimeString('en-NZ', { hour: '2-digit', minute: '2-digit' });
     const date = now.toLocaleDateString('en-NZ', { weekday: 'short', month: 'short', day: 'numeric' });
     document.getElementById('clock').innerHTML = `${time}<br><span style="font-size:10px">${date}</span>`;
+}
+
+//c executable
+function loadScriptOnce(src) {
+    return new Promise((res, rej) => {
+        if (document.querySelector(`script[src="${src}"]`)) return res();
+        const s = document.createElement('script');
+        s.src = src; s.onload = res;
+        s.onerror = () => rej(new Error('Cannot load ' + src));
+        document.head.appendChild(s);
+    });
+}
+
+async function runNative(prog, write, args = []) {
+    await loadScriptOnce(prog.src);
+    // Each call creates a fresh instance, so the program can be run repeatedly
+    await window[prog.factory]({
+        print: t => write(t),
+        printErr: t => write(t, true),
+        arguments: args,
+    });
+}
+
+function findFile(name, node = FS.Desktop) {
+    for (const [n, child] of Object.entries(node.children || {})) {
+        if (n === name || n === name + '.exe') return child;
+        if (child.children) { const r = findFile(name, child); if (r) return r; }
+    }
+    return null;
+}
+
+function openNative(name, prog) {
+    createWindow({
+        title: ` ${name}`, width: 520, height: 340, iconColor: 'var(--accent2)',
+        content(body) {
+            const out = document.createElement('div');
+            out.className = 'terminal-body';
+            body.appendChild(out);
+            const write = (text, err) => {
+                const line = document.createElement('div');
+                line.className = 'terminal-line' + (err ? ' error' : '');
+                line.innerHTML = '<span class="output"></span>';
+                line.firstChild.textContent = text;
+                out.appendChild(line);
+                out.scrollTop = out.scrollHeight;
+            };
+            runNative(prog, write).catch(e => write(e.message, true));
+        }
+    });
 }
 
 // context menu
