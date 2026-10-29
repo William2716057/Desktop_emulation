@@ -41,8 +41,8 @@
     const logEl = document.getElementById('log');
     const log = (t, bad) => { console[bad ? 'error' : 'log'](t); logEl.textContent += t + '\n'; };
 
-    addEventListener('error', e => log('ERROR: ' + e.message + ' @' + e.lineno, true));
-    addEventListener('unhandledrejection', e => log('REJECTED: ' + (e.reason && e.reason.stack || e.reason), true));
+    //addEventListener('error', e => log('ERROR: ' + e.message + ' @' + e.lineno, true));
+    //addEventListener('unhandledrejection', e => log('REJECTED: ' + (e.reason && e.reason.stack || e.reason), true));
 
     const MAP = {
         ArrowLeft: 0xac, ArrowUp: 0xad, ArrowRight: 0xae, ArrowDown: 0xaf,
@@ -56,13 +56,13 @@
 
     addEventListener('message', async e => {
         const { glue, wasm, data, factory, args } = e.data;       // wasm and data are defined only in here
-        log(`received: glue ${glue.length} chars, wasm ${wasm.byteLength} bytes, data ${data.byteLength} bytes`);
+        //log(`received: glue ${glue.length} chars, wasm ${wasm.byteLength} bytes, data ${data.byteLength} bytes`);
 
         // Serve doom.data from the bytes the parent sent; the CSP blocks real network requests
         const realFetch = window.fetch.bind(window);
         window.fetch = (url, opts) => {
             if (String(url).split('?')[0].endsWith('.data')) {
-                log('serving package: ' + url);
+                //log('serving package: ' + url);
                 return Promise.resolve(new Response(data, {
                     status: 200,
                     headers: { 'Content-Length': String(data.byteLength) },
@@ -75,8 +75,8 @@
             canvas: c, keyq: [],
             wasmBinary: wasm,
             arguments: args,
-            print: t => log(t),
-            printErr: t => log(t, true),
+            //print: t => log(t),
+            //printErr: t => log(t, true),
             getPreloadedPackage: () => data,
             instantiateWasm(imports, done) {
                 WebAssembly.instantiate(wasm, imports)
@@ -101,8 +101,8 @@
         const s = document.createElement('script');
         s.src = URL.createObjectURL(new Blob([glue], { type: 'text/javascript' }));
         await new Promise((ok, bad) => { s.onload = ok; s.onerror = () => bad(new Error('glue script failed to load')); document.head.appendChild(s); });
-        log('typeof ' + factory + ' = ' + typeof window[factory]);
+        //log('typeof ' + factory + ' = ' + typeof window[factory]);
         await window[factory](mod);
-        log('module started');
+        //log('module started');
     });
 </script>
