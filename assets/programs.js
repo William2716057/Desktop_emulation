@@ -111,7 +111,8 @@ h1 {
                     'flappy.app': { type: 'flappy' }, //move to game folder 
                     'about.app': { type: 'about' },
                     'terminal.app': { type: 'terminal' },
-                    'hello.exe': { type: 'native', src: 'assets/bin/hello.js', factory: 'createHello' },
+                    'hello.exe': { type: 'native', src: 'assets/bin/hello.js', factory: 'createHello' }, //c exec file
+                    'doom.exe': { type: 'native', gfx: true, src: 'assets/bin/doom.js', factory: 'createDoom', args: ['-iwad', 'doom1.wad'] }, //doom 
                     'syslog.txt': {
                         type: 'text', content: `[2026-04-25 08:00:01] BOOT: CloudOS kernel initializing... 
 [2026-04-25 08:00:02] BOOT: Loading modules... OK
@@ -189,6 +190,7 @@ function openTerminal() {
                 run: async (args) => {
                     const prog = findFile(args[0] || '');
                     if (!prog || prog.type !== 'native') return `run: ${args[0] || ''}: no such program`;
+                    if (prog.gfx) { openNativeGfx(args[0], prog); return ''; }
                     await runNative(prog, write, args.slice(1));
                     return '';
                 },

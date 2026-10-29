@@ -272,8 +272,9 @@ function renderFileBrowser(body, pathArr) {
                 icon.innerHTML = `${appSVG('#e3b341')}<span>${name}</span>`;
                 icon.ondblclick = () => openFlappyBird();
             } else if (child.type === 'native') { //c exec
-                icon.innerHTML = `${termSVG('#3fb950')}<span>${name}</span>`;
+                icon.innerHTML = `${termSVG('#3fb950')}<span>${name}</span>`; //???
                 icon.ondblclick = () => openNative(name, child);
+                icon.ondblclick = () => child.gfx ? openNativeGfx(name, child) : openNative(name, child);
             }
         
 
@@ -500,6 +501,33 @@ function openNative(name, prog) {
                 out.scrollTop = out.scrollHeight;
             };
             runNative(prog, write).catch(e => write(e.message, true));
+        }
+    });
+}
+
+//graphical runner for Doom
+async function openNativeGfx(name, prog) {
+    let frame;
+    createWindow({
+        title: ` ${name}`, width: 680, height: 460, iconColor: 'var(--accent3)',
+        onClose() { frame?.remove(); },           // stops the game and frees its memory
+        content(body) {
+            body.style.background = '#000';
+            body.style.overflow = 'hidden';
+            frame = document.createElement('iframe');
+            frame.sandbox = 'allow-scripts';      // deliberately no allow-same-origin
+            frame.style.cssText = 'width:100%;height:100%;border:0;display:block;';
+            frame.src = 'assets/runner-gfx.html';
+            body.appendChild(frame);
+            frame.onload = async () => {
+                const [glue, wasm] = await Promise.all([
+                    fetch(prog.src).then(r => r.text()),
+                    fetch(prog.src.replace(/\.js$/, '.wasm')).then(r => r.arrayBuffer()),
+                ]);
+                frame.contentWindow.postMessage(
+                    { glue, wasm, factory: prog.factory, args: prog.args || [] }, '*');
+                frame.focus();
+            };
         }
     });
 }
