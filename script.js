@@ -276,7 +276,7 @@ function renderFileBrowser(body, pathArr) {
                 icon.ondblclick = () => openNative(name, child);
                 icon.ondblclick = () => child.gfx ? openNativeGfx(name, child) : openNative(name, child);
             }
-        
+
 
             content.appendChild(icon);
         });
@@ -520,13 +520,27 @@ async function openNativeGfx(name, prog) {
             frame.src = 'assets/runner-gfx.html';
             body.appendChild(frame);
             frame.onload = async () => {
-                const [glue, wasm] = await Promise.all([
-                    fetch(prog.src).then(r => r.text()),
-                    fetch(prog.src.replace(/\.js$/, '.wasm')).then(r => r.arrayBuffer()),
-                ]);
-                frame.contentWindow.postMessage(
-                    { glue, wasm, factory: prog.factory, args: prog.args || [] }, '*');
-                frame.focus();
+                try {
+                    const get = async (url, kind) => {
+                        const r = await fetch(url);
+                        if (!r.ok) throw new Error(`${r.status} loading ${url}`);
+                        return r[kind]();
+                    };
+                    const [glue, wasm, data] = await Promise.all([
+                        get(prog.src, 'text'),
+                        get(prog.src.replace(/\.js$/, '.wasm'), 'arrayBuffer'),
+                        get(prog.data, 'arrayBuffer'),
+                    ]);
+                    frame.contentWindow.postMessage(
+                        { glue, wasm, data, factory: prog.factory, args: prog.args || [] }, '*');
+                    frame.focus();
+                } catch (err) {
+                    const msg = document.createElement('div');
+                    msg.style.cssText = 'position:absolute;inset:0;padding:12px;color:#f78166;font:12px monospace;white-space:pre-wrap';
+                    msg.textContent = 'Failed to start: ' + err.message;
+                    body.style.position = 'relative';
+                    body.appendChild(msg);
+                }
             };
         }
     });

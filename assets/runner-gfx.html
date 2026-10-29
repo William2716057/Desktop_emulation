@@ -19,43 +19,80 @@
         image-rendering: pixelated;
         outline: none;
     }
+
+    #log {
+        position: fixed;
+        left: 6px;
+        top: 6px;
+        right: 6px;
+        margin: 0;
+        color: #0f0;
+        font: 11px monospace;
+        white-space: pre-wrap;
+        pointer-events: none;
+        max-height: 95%;
+        overflow: hidden;
+    }
 </style>
 <canvas id="c" width="640" height="400" tabindex="0"></canvas>
-<script>const c = document.getElementById('c');
+<pre id="log"></pre>
+<script>
+    const c = document.getElementById('c');
+    const logEl = document.getElementById('log');
+    const log = (t, bad) => { console[bad ? 'error' : 'log'](t); logEl.textContent += t + '\n'; };
 
-// Browser key -> Doom key code (doomkeys.h)
-const MAP = {
-    ArrowLeft: 0xac, ArrowUp: 0xad, ArrowRight: 0xae, ArrowDown: 0xaf,
-    ControlLeft: 0xa3, ControlRight: 0xa3,        // fire
-    Space: 32, Enter: 13, Escape: 27, Tab: 9, Backspace: 0x7f,
-    ShiftLeft: 0xb6, ShiftRight: 0xb6,            // run
-    AltLeft: 0xb8, AltRight: 0xb8,                // strafe modifier
-    Comma: 0xa0, Period: 0xa1,                    // strafe left / right
-};
-const doomKey = e => MAP[e.code] ?? (e.key.length === 1 ? e.key.toLowerCase().charCodeAt(0) : null);
+    addEventListener('error', e => log('ERROR: ' + e.message + ' @' + e.lineno, true));
+    addEventListener('unhandledrejection', e => log('REJECTED: ' + (e.reason && e.reason.stack || e.reason), true));
 
-addEventListener('message', async e => {
-    const { glue, wasm, factory, args } = e.data;
-    const mod = {
-        canvas: c, keyq: [],
-        wasmBinary: wasm,
-        arguments: args,
-        print: () => {}, printErr: () => {},
+    const MAP = {
+        ArrowLeft: 0xac, ArrowUp: 0xad, ArrowRight: 0xae, ArrowDown: 0xaf,
+        ControlLeft: 0xa3, ControlRight: 0xa3,
+        Space: 32, Enter: 13, Escape: 27, Tab: 9, Backspace: 0x7f,
+        ShiftLeft: 0xb6, ShiftRight: 0xb6,
+        AltLeft: 0xb8, AltRight: 0xb8,
+        Comma: 0xa0, Period: 0xa1,
     };
-    for (const type of ['keydown', 'keyup']) {
-        addEventListener(type, ev => {
-            const k = doomKey(ev);
-            if (k == null) return;
-            ev.preventDefault();
-            if (ev.repeat) return;
-            mod.keyq.push(((type === 'keydown' ? 1 : 0) << 8) | k);
-        });
-    }
-    addEventListener('mousedown', () => c.focus());
-    c.focus();
+    const doomKey = e => MAP[e.code] ?? (e.key.length === 1 ? e.key.toLowerCase().charCodeAt(0) : null);
 
-    const s = document.createElement('script');
-    s.src = URL.createObjectURL(new Blob([glue], { type: 'text/javascript' }));
-    await new Promise((ok, bad) => { s.onload = ok; s.onerror = bad; document.head.appendChild(s); });
-    await window[factory](mod);
-});</script>
+    addEventListener('message', async e => {
+        const { glue, wasm, data, factory, args } = e.data;      // wasm is defined only in here
+        log(`received: glue ${glue.length} chars, wasm ${wasm.byteLength} bytes`);
+
+        const mod = {
+            canvas: c, keyq: [],
+            wasmBinary: wasm,
+            arguments: args, //added
+            preRun: [() => {
+                mod.FS.writeFile('/doom1.wad', new Uint8Array(wad));
+                log('wad written: ' + wad.byteLength + ' bytes; / contains: ' + mod.FS.readdir('/').join(', '));
+            }],
+            print: t => log(t),
+            printErr: t => log(t, true),
+            instantiateWasm(imports, done) {
+                WebAssembly.instantiate(wasm, imports)
+                    .then(r => done(r.instance, r.module))
+                    .catch(err => log('wasm instantiate failed: ' + err, true));
+                return {};
+            },
+        };
+
+        for (const type of ['keydown', 'keyup']) {
+            addEventListener(type, ev => {
+                const k = doomKey(ev);
+                if (k == null) return;
+                ev.preventDefault();
+                if (ev.repeat) return;
+                mod.keyq.push(((type === 'keydown' ? 1 : 0) << 8) | k);
+            });
+        }
+        addEventListener('mousedown', () => c.focus());
+        c.focus();
+
+        const s = document.createElement('script');
+        s.src = URL.createObjectURL(new Blob([glue], { type: 'text/javascript' }));
+        await new Promise((ok, bad) => { s.onload = ok; s.onerror = () => bad(new Error('glue script failed to load')); document.head.appendChild(s); });
+        log('typeof ' + factory + ' = ' + typeof window[factory]);
+        await window[factory](mod);
+        log('module started');
+    });
+</script>

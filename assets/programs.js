@@ -112,7 +112,7 @@ h1 {
                     'about.app': { type: 'about' },
                     'terminal.app': { type: 'terminal' },
                     'hello.exe': { type: 'native', src: 'assets/bin/hello.js', factory: 'createHello' }, //c exec file
-                    'doom.exe': { type: 'native', gfx: true, src: 'assets/bin/doom.js', factory: 'createDoom', args: ['-iwad', 'doom1.wad'] }, //doom 
+                    'doom.exe': { type: 'native', gfx: true, src: 'assets/bin/doom.js', data: 'assets/bin/doom.data', factory: 'createDoom', args: ['-iwad', 'doom1.wad'] }, //doom//doom //doom 
                     'syslog.txt': {
                         type: 'text', content: `[2026-04-25 08:00:01] BOOT: CloudOS kernel initializing... 
 [2026-04-25 08:00:02] BOOT: Loading modules... OK
