@@ -55,19 +55,29 @@
     const doomKey = e => MAP[e.code] ?? (e.key.length === 1 ? e.key.toLowerCase().charCodeAt(0) : null);
 
     addEventListener('message', async e => {
-        const { glue, wasm, data, factory, args } = e.data;      // wasm is defined only in here
-        log(`received: glue ${glue.length} chars, wasm ${wasm.byteLength} bytes`);
+        const { glue, wasm, data, factory, args } = e.data;       // wasm and data are defined only in here
+        log(`received: glue ${glue.length} chars, wasm ${wasm.byteLength} bytes, data ${data.byteLength} bytes`);
+
+        // Serve doom.data from the bytes the parent sent; the CSP blocks real network requests
+        const realFetch = window.fetch.bind(window);
+        window.fetch = (url, opts) => {
+            if (String(url).split('?')[0].endsWith('.data')) {
+                log('serving package: ' + url);
+                return Promise.resolve(new Response(data, {
+                    status: 200,
+                    headers: { 'Content-Length': String(data.byteLength) },
+                }));
+            }
+            return realFetch(url, opts);
+        };
 
         const mod = {
             canvas: c, keyq: [],
             wasmBinary: wasm,
-            arguments: args, //added
-            preRun: [() => {
-                mod.FS.writeFile('/doom1.wad', new Uint8Array(wad));
-                log('wad written: ' + wad.byteLength + ' bytes; / contains: ' + mod.FS.readdir('/').join(', '));
-            }],
+            arguments: args,
             print: t => log(t),
             printErr: t => log(t, true),
+            getPreloadedPackage: () => data,
             instantiateWasm(imports, done) {
                 WebAssembly.instantiate(wasm, imports)
                     .then(r => done(r.instance, r.module))
